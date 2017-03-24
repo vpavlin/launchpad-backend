@@ -84,10 +84,13 @@ import org.obsidiantoaster.generator.util.JsonBuilder;
 @ApplicationScoped
 public class ObsidianResource
 {
+
    private static final String DEFAULT_COMMAND_NAME = "obsidian-new-quickstart";
 
    private static final Logger log = Logger.getLogger(ObsidianResource.class.getName());
-   private static final String CATAPULT_SERVICE_HOST = "CATAPULT_SERVICE_HOST";
+   public static final String CATAPULT_SERVICE_HOST = "CATAPULT_SERVICE_HOST";
+
+   public static final String CATAPULT_SERVICE_PORT = "CATAPULT_SERVICE_PORT";
 
    private final Map<String, String> commandMap = new TreeMap<>();
 
@@ -343,7 +346,7 @@ public class ObsidianResource
          throw new WebApplicationException("'" + CATAPULT_SERVICE_HOST + "' environment variable must be set!");
       }
       uri.host(serviceHost);
-      String port = System.getenv("CATAPULT_SERVICE_PORT");
+      String port = System.getenv(CATAPULT_SERVICE_PORT);
       uri.port(port != null ? Integer.parseInt(port) : 80);
       uri.scheme("http");
       return uri.build();
