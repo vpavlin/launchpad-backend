@@ -6,7 +6,7 @@ spec:
           - name: OPENSHIFT_API_URL
             value: ${OPENSHIFT_API_URL}
           - name: KEYCLOAK_SAAS_URL
-            value: http://sso.prod-preview.openshift.io
+            value: ${KEYCLOAK_SAAS_URL}
           workingDir: /home
           readinessProbe:
             timeoutSeconds: 3
