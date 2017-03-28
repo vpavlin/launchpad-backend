@@ -5,8 +5,10 @@ metadata:
   labels:
     app: generator-backend
 spec:
+  host: ${FORGE_URL}
   to:
     kind: Service
     name: generator-backend
   tls:
-    termination: passthrough
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
