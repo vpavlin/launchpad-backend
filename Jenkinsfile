@@ -60,11 +60,12 @@ deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-fabric8-forge-conf
 
       def prj = 'dsaas-preview-fabric8-forge'
       def forgeURL = 'forge.api.prod-preview.openshift.io'
+      def openshiftURL = 'https://api.free-int.openshift.com'
       def yaml = "http://central.maven.org/maven2/io/fabric8/${name}/${releaseVersion}/${name}-${releaseVersion}-openshift.yml"
 
       echo "now deploying to namespace ${prj}"
       sh """
-        oc process -n ${prj} -f ${yaml} -v FORGE_URL=${forgeURL} | oc apply -n ${prj} -f -
+        oc process -n ${prj} -f ${yaml} -v FORGE_URL=${forgeURL} -v OPENSHIFT_API_URL ${openshiftURL} | oc apply -n ${prj} -f -
       """
 
       sleep 10 // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at the new DC perhaps?
