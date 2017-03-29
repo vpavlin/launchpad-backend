@@ -80,8 +80,11 @@ import io.openshift.launchpad.backend.ForgeInitializer;
 import io.openshift.launchpad.backend.event.FurnaceStartup;
 import io.openshift.launchpad.backend.util.JsonBuilder;
 
+import org.wildfly.swarm.topology.Advertise;
+
 @javax.ws.rs.Path("/launchpad")
 @ApplicationScoped
+@Advertise("backend")
 public class LaunchpadResource
 {
    private static final String DEFAULT_COMMAND_NAME = "launchpad-new-project";
