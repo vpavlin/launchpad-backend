@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
@@ -19,7 +18,7 @@
       <arquillian.version>1.1.12.Final</arquillian.version>
       <obsidian.forge.version>${project.version}</obsidian.forge.version>
       <fabric8.maven.plugin.version>3.3.1</fabric8.maven.plugin.version>
-      <fabric8.generator.version>1.0.7</fabric8.generator.version>
+      <fabric8.generator.version>1.0.9</fabric8.generator.version>
       <maven.enforcer.plugin.version>1.4</maven.enforcer.plugin.version>
       <wildfly.swarm.version>2017.3.2</wildfly.swarm.version>
       <forge.version>3.6.0.Final</forge.version>
@@ -202,7 +201,7 @@
                               </goals>
                            </pluginExecutionFilter>
                            <action>
-                              <ignore />
+                              <ignore/>
                            </action>
                         </pluginExecution>
                         <pluginExecution>
@@ -215,7 +214,7 @@
                               </goals>
                            </pluginExecutionFilter>
                            <action>
-                              <ignore />
+                              <ignore/>
                            </action>
                         </pluginExecution>
                      </pluginExecutions>
