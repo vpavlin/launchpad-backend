@@ -44,6 +44,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
+import javax.json.JsonStructure;
+import javax.json.JsonWriter;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -67,6 +69,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -276,7 +279,7 @@ public class ObsidianResource
       {
          JsonObject responseEntity = (JsonObject) response.getEntity();
          String error = ((JsonObject) responseEntity.getJsonArray("messages").get(0)).getString("description");
-         return Response.status(Status.PRECONDITION_FAILED).entity(error).build();
+         return Response.status(Status.PRECONDITION_FAILED).entity(unwrapJsonObjects(error)).build();
       }
       return response;
    }
@@ -311,7 +314,7 @@ public class ObsidianResource
       {
          JsonObject responseEntity = (JsonObject) response.getEntity();
          String error = ((JsonObject) responseEntity.getJsonArray("messages").get(0)).getString("description");
-         return Response.status(Status.PRECONDITION_FAILED).entity(error).build();
+         return Response.status(Status.PRECONDITION_FAILED).entity(unwrapJsonObjects(error)).build();
       }
       return response;
    }
@@ -338,7 +341,7 @@ public class ObsidianResource
       {
          JsonObject responseEntity = (JsonObject) response.getEntity();
          String error = ((JsonObject) responseEntity.getJsonArray("messages").get(0)).getString("description");
-         return Response.status(Status.PRECONDITION_FAILED).entity(error).build();
+         return Response.status(Status.PRECONDITION_FAILED).entity(unwrapJsonObjects(error)).build();
       }
       return response;
    }
@@ -380,7 +383,7 @@ public class ObsidianResource
          {
             JsonObjectBuilder builder = createObjectBuilder();
             helper.describeValidation(builder, controller);
-            return Response.status(Status.PRECONDITION_FAILED).entity(builder.build()).build();
+            return Response.status(Status.PRECONDITION_FAILED).entity(unwrapJsonObjects(builder.build())).build();
          }
       }
       finally
@@ -410,13 +413,14 @@ public class ObsidianResource
             {
                JsonObjectBuilder builder = Json.createObjectBuilder();
                helper.describeResult(builder,result);
-               return Response.status(Status.INTERNAL_SERVER_ERROR).entity(builder).build();
+               return Response.status(Status.INTERNAL_SERVER_ERROR).entity(unwrapJsonObjects(builder)).build();
             }
             else
             {
                Object entity = getEntity(result);
                if (entity != null)
                {
+                  entity = unwrapJsonObjects(entity);
                   return Response
                            .ok(entity)
                            .type(MediaType.APPLICATION_JSON)
@@ -435,9 +439,27 @@ public class ObsidianResource
          {
             JsonObjectBuilder builder = createObjectBuilder();
             helper.describeValidation(builder, controller);
-            return Response.status(Status.PRECONDITION_FAILED).entity(builder.build()).build();
+            return Response.status(Status.PRECONDITION_FAILED).entity(unwrapJsonObjects(builder.build())).build();
          }
       }
+   }
+
+   protected Object unwrapJsonObjects(Object entity)
+   {
+      if (entity instanceof JsonObjectBuilder)
+      {
+         JsonObjectBuilder jsonObjectBuilder = (JsonObjectBuilder) entity;
+         entity = jsonObjectBuilder.build();
+      }
+      if (entity instanceof JsonStructure)
+      {
+         StringWriter buffer = new StringWriter();
+         JsonWriter writer = Json.createWriter(buffer);
+         writer.write((JsonStructure) entity);
+         writer.close();
+         return buffer.toString();
+      }
+      return entity;
    }
 
    /**
