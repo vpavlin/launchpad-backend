@@ -69,6 +69,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.file.Files;
@@ -441,6 +442,29 @@ public class ObsidianResource
             helper.describeValidation(builder, controller);
             return Response.status(Status.PRECONDITION_FAILED).entity(unwrapJsonObjects(builder.build())).build();
          }
+      }
+      catch (Exception e)
+      {
+         StringWriter writer = new StringWriter();
+         PrintWriter ps =new PrintWriter(writer);
+         boolean first = true;
+         Throwable t = e;
+         while (true)
+         {
+            String prefix = first ? "Error: " : "Caused by: ";
+            first = false;
+            ps.println(prefix + t.getMessage());
+            t.printStackTrace(ps);
+            ps.println();
+            Throwable previous = t;
+            t = t.getCause();
+            if (t == null || t == previous || t.equals(previous))
+            {
+               break;
+            }
+         }
+         ps.close();
+         return Response.status(Status.INTERNAL_SERVER_ERROR).entity(writer.toString()).build();
       }
    }
 
