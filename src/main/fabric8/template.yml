@@ -5,5 +5,5 @@ parameters:
 - name: OPENSHIFT_API_URL
   value: https://api.free-int.openshift.com
 - name: KEYCLOAK_SAAS_URL
-  value: http://sso.prod-preview.openshift.io
+  value: https://sso.prod-preview.openshift.io
 
