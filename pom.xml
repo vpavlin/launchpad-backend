@@ -198,10 +198,6 @@
          <groupId>org.wildfly.swarm</groupId>
          <artifactId>jaxrs-multipart</artifactId>
       </dependency>
-      <dependency>
-         <groupId>org.wildfly.swarm</groupId>
-         <artifactId>topology-jgroups</artifactId>
-      </dependency>
 
       <!-- Forge APIs -->
       <dependency>
@@ -228,6 +224,18 @@
    </dependencies>
    <profiles>
       <profile>
+         <id>normal</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
+         <dependencies>
+            <dependency>
+               <groupId>org.wildfly.swarm</groupId>
+               <artifactId>topology-jgroups</artifactId>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>openshift</id>
          <build>
             <plugins>
@@ -253,7 +261,14 @@
                </plugin>
             </plugins>
          </build>
+         <dependencies>
+            <dependency>
+               <groupId>org.wildfly.swarm</groupId>
+               <artifactId>topology-openshift</artifactId>
+            </dependency>
+         </dependencies>
       </profile>
+
       <profile>
          <id>it</id>
          <build>
