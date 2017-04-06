@@ -382,6 +382,12 @@
           <javadoc.opts>-Xdoclint:none</javadoc.opts>
         </properties>
       </profile>
+     <profile>
+       <id>generator-snapshot</id>
+       <properties>
+         <fabric8.generator.version>1.0.0-SNAPSHOT</fabric8.generator.version>
+       </properties>
+     </profile>
    </profiles>
    <scm>
       <connection>${obs.scm.git.connection}</connection>
