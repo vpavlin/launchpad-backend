@@ -5,7 +5,6 @@ metadata:
   labels:
     app: generator-backend
 spec:
-  host: ${FORGE_URL}
   to:
     kind: Service
     name: generator-backend
