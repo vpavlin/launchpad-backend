@@ -58,7 +58,7 @@ deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-fabric8-forge-conf
     stage "Deploying ${releaseVersion}"
     container(name: 'clients') {
 
-      def prj = 'dsaas-preview-fabric8-forge'
+      def prj = 'dsaas-preview'
       def forgeURL = 'forge.api.prod-preview.openshift.io'
       def openshiftURL = 'https://api.free-int.openshift.com'
       def yaml = "http://central.maven.org/maven2/io/fabric8/${name}/${releaseVersion}/${name}-${releaseVersion}-openshift.yml"
