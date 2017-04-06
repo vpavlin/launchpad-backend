@@ -53,7 +53,7 @@ if (newRelease){
   }
 }
 
-deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-fabric8-forge-config'){
+deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-config'){
   ws{
     stage "Deploying ${releaseVersion}"
     container(name: 'clients') {
