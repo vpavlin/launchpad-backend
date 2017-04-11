@@ -65,7 +65,7 @@ deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-config'){
 
       echo "now deploying to namespace ${prj}"
       sh """
-        oc process -n ${prj} -f ${yaml} | oc apply -n ${prj} -f -
+        oc process -n ${prj} -f ${yaml} | oc replace -n ${prj} -f -
       """
 
       sleep 10 // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at the new DC perhaps?
