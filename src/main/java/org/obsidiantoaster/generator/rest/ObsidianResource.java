@@ -105,8 +105,8 @@ public class ObsidianResource
 
    public ObsidianResource()
    {
-      commandMap.put("obsidian-new-quickstart", "Obsidian: New Quickstart");
-      commandMap.put("obsidian-new-project", "Obsidian: New Project");
+      commandMap.put("launchpad-new-project", "Launchpad: New Project");
+      commandMap.put("launchpad-new-starter-project", "Launchpad: New Starter Project");
 
       commandMap.put("fabric8-import-git", "fabric8: Import Git");
       commandMap.put("fabric8-check-git-accounts", "fabric8: Check Git Accounts");
