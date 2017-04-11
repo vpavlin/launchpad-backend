@@ -91,7 +91,7 @@ import static javax.json.Json.createObjectBuilder;
 @ApplicationScoped
 public class ObsidianResource
 {
-   private static final String DEFAULT_COMMAND_NAME = "obsidian-new-quickstart";
+   private static final String DEFAULT_COMMAND_NAME = "launchpad-new-project";
 
    private static final Logger log = Logger.getLogger(ObsidianResource.class.getName());
    public static final String CATAPULT_SERVICE_HOST = "CATAPULT_SERVICE_HOST";
