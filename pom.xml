@@ -18,12 +18,15 @@
       <arquillian.version>1.1.12.Final</arquillian.version>
       <obsidian.forge.version>${project.version}</obsidian.forge.version>
       <fabric8.maven.plugin.version>3.3.1</fabric8.maven.plugin.version>
-      <fabric8.generator.version>1.0.17</fabric8.generator.version>
+      <fabric8.generator.version>1.0.0-SNAPSHOT</fabric8.generator.version>
+      <!--
+      <fabric8.generator.version>1.0.11</fabric8.generator.version>
+      -->
       <maven.enforcer.plugin.version>1.4</maven.enforcer.plugin.version>
       <wildfly.swarm.version>2017.3.2</wildfly.swarm.version>
-      <forge.version>3.6.0.Final</forge.version>
-      <forge.service.version>1.0.0.CR2</forge.service.version>
-      <furnace.version>2.25.2.Final</furnace.version>
+      <forge.version>3.6.1.Final</forge.version>
+      <forge.service.version>1.0.0.CR3</forge.service.version>
+      <furnace.version>2.25.4.Final</furnace.version>
       <!-- SCM properties -->
       <obs.scm.git.connection>scm:git:git://github.com/fabric8io/generator-backend.git</obs.scm.git.connection>
       <obs.scm.dev.connection>scm:git:git@github.com:fabric8io/generator-backend.git</obs.scm.dev.connection>

@@ -91,7 +91,7 @@ import static javax.json.Json.createObjectBuilder;
 @ApplicationScoped
 public class ObsidianResource
 {
-   private static final String DEFAULT_COMMAND_NAME = "obsidian-new-quickstart";
+   private static final String DEFAULT_COMMAND_NAME = "launchpad-new-project";
 
    private static final Logger log = Logger.getLogger(ObsidianResource.class.getName());
    public static final String CATAPULT_SERVICE_HOST = "CATAPULT_SERVICE_HOST";
@@ -105,9 +105,9 @@ public class ObsidianResource
 
    public ObsidianResource()
    {
-      commandMap.put("obsidian-new-quickstart", "Obsidian: New Quickstart");
-      commandMap.put("obsidian-new-project", "Obsidian: New Project");
-      
+      commandMap.put("launchpad-new-project", "Launchpad: New Project");
+      commandMap.put("launchpad-new-starter-project", "Launchpad: New Starter Project");
+
       commandMap.put("fabric8-new-quickstart", "Fabric8: New Quickstart");
 
       commandMap.put("fabric8-import-git", "fabric8: Import Git");
