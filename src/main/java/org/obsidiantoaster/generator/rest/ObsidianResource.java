@@ -1,17 +1,17 @@
 /**
- *  Copyright 2005-2015 Red Hat, Inc.
- *
- *  Red Hat licenses this file to you under the Apache License, version
- *  2.0 (the "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied.  See the License for the specific language governing
- *  permissions and limitations under the License.
+ * Copyright 2005-2015 Red Hat, Inc.
+ * <p>
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 package org.obsidiantoaster.generator.rest;
 
@@ -41,6 +41,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
@@ -69,7 +70,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.file.Files;
@@ -85,23 +85,30 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 
 @javax.ws.rs.Path("/forge")
 @ApplicationScoped
 public class ObsidianResource
 {
-   private static final String DEFAULT_COMMAND_NAME = "launchpad-new-project";
-
-   private static final Logger log = Logger.getLogger(ObsidianResource.class.getName());
    public static final String CATAPULT_SERVICE_HOST = "CATAPULT_SERVICE_HOST";
-
+   private static final String DEFAULT_COMMAND_NAME = "launchpad-new-project";
+   private static final Logger log = Logger.getLogger(ObsidianResource.class.getName());
    private final Map<String, String> commandMap = new TreeMap<>();
 
    private final BlockingQueue<Path> directoriesToDelete = new LinkedBlockingQueue<>();
 
    @javax.annotation.Resource
    private ManagedExecutorService executorService;
+   @Inject
+   private CommandFactory commandFactory;
+   @Inject
+   private CommandControllerFactory controllerFactory;
+   @Inject
+   private ResourceFactory resourceFactory;
+   @Inject
+   private UICommandHelper helper;
 
    public ObsidianResource()
    {
@@ -117,17 +124,53 @@ public class ObsidianResource
       commandMap.put("fabric8-configure-git-account", "fabric8: Configure Git Account");
    }
 
-   @Inject
-   private CommandFactory commandFactory;
+   /**
+    * Returns the entity from the result handling {@link CompositeResult} values as a List of entities
+    */
+   protected static Object getEntity(Result result)
+   {
+      if (result instanceof CompositeResult)
+      {
+         CompositeResult compositeResult = (CompositeResult) result;
+         List<Object> answer = new ArrayList<>();
+         List<Result> results = compositeResult.getResults();
+         for (Result child : results)
+         {
+            Object entity = getEntity(child);
+            answer.add(entity);
+         }
+         return answer;
+      }
+      return result.getEntity().orElse(null);
+   }
 
-   @Inject
-   private CommandControllerFactory controllerFactory;
+   /**
+    * Returns the result message handling composite results
+    */
+   protected static String getMessage(Result result)
+   {
+      if (result instanceof CompositeResult)
+      {
+         CompositeResult compositeResult = (CompositeResult) result;
+         StringBuilder builder = new StringBuilder();
+         List<Result> results = compositeResult.getResults();
+         for (Result child : results)
+         {
+            String message = getMessage(child);
+            if (message != null && message.trim().length() > 0)
+            {
+               if (builder.length() > 0)
+               {
+                  builder.append("\n");
+               }
+               builder.append(message);
+            }
+         }
+         return builder.toString();
 
-   @Inject
-   private ResourceFactory resourceFactory;
-
-   @Inject
-   private UICommandHelper helper;
+      }
+      return result.getMessage();
+   }
 
    void init(@Observes FurnaceStartup startup)
    {
@@ -137,7 +180,8 @@ public class ObsidianResource
          // Warm up
          getCommand(DEFAULT_COMMAND_NAME, ForgeInitializer.getRoot(), null);
          log.info("Caches warmed up");
-         executorService.submit(() -> {
+         executorService.submit(() ->
+         {
             java.nio.file.Path path = null;
             try
             {
@@ -177,80 +221,101 @@ public class ObsidianResource
    @GET
    @javax.ws.rs.Path("/commands/{commandName}")
    @Produces(MediaType.APPLICATION_JSON)
-   public JsonObject getCommandInfo(
+   public Response getCommandInfo(
             @PathParam("commandName") @DefaultValue(DEFAULT_COMMAND_NAME) String commandName,
             @Context HttpHeaders headers)
             throws Exception
    {
-      validateCommand(commandName);
-      JsonObjectBuilder builder = createObjectBuilder();
-      try (CommandController controller = getCommand(commandName, ForgeInitializer.getRoot(), headers))
+      try
       {
-         helper.describeController(builder, controller);
+         validateCommand(commandName);
+         JsonObjectBuilder builder = createObjectBuilder();
+         try (CommandController controller = getCommand(commandName, ForgeInitializer.getRoot(), headers))
+         {
+            helper.describeController(builder, controller);
+         }
+         return Response.ok(builder.build()).build();
       }
-      return builder.build();
+      catch (Exception e)
+      {
+         return errorResponse(e);
+      }
    }
 
    @POST
    @javax.ws.rs.Path("/commands/{commandName}/validate")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
-   public JsonObject validateCommand(JsonObject content,
+   public Response validateCommand(JsonObject content,
             @PathParam("commandName") @DefaultValue(DEFAULT_COMMAND_NAME) String commandName,
             @Context HttpHeaders headers)
             throws Exception
    {
-      validateCommand(commandName);
-      JsonObjectBuilder builder = createObjectBuilder();
-      try (CommandController controller = getCommand(commandName, ForgeInitializer.getRoot(), headers))
+      try
       {
-         helper.populateControllerAllInputs(content, controller);
-         helper.describeCurrentState(builder, controller);
-         helper.describeValidation(builder, controller);
-         helper.describeInputs(builder, controller);
+         validateCommand(commandName);
+         JsonObjectBuilder builder = createObjectBuilder();
+         try (CommandController controller = getCommand(commandName, ForgeInitializer.getRoot(), headers))
+         {
+            helper.populateControllerAllInputs(content, controller);
+            helper.describeCurrentState(builder, controller);
+            helper.describeValidation(builder, controller);
+            helper.describeInputs(builder, controller);
+         }
+         return Response.ok(builder.build()).build();
       }
-      return builder.build();
+      catch (Exception e)
+      {
+         return errorResponse(e);
+      }
    }
 
    @POST
    @javax.ws.rs.Path("/commands/{commandName}/next")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
-   public JsonObject nextStep(JsonObject content,
+   public Response nextStep(JsonObject content,
             @PathParam("commandName") @DefaultValue(DEFAULT_COMMAND_NAME) String commandName,
             @Context HttpHeaders headers)
             throws Exception
    {
-      validateCommand(commandName);
-      int stepIndex = content.getInt("stepIndex", 1);
-      JsonObjectBuilder builder = createObjectBuilder();
-      try (CommandController controller = getCommand(commandName, ForgeInitializer.getRoot(), headers))
+      try
       {
-         if (!(controller instanceof WizardCommandController))
+         validateCommand(commandName);
+         int stepIndex = content.getInt("stepIndex", 1);
+         JsonObjectBuilder builder = createObjectBuilder();
+         try (CommandController controller = getCommand(commandName, ForgeInitializer.getRoot(), headers))
          {
-            throw new WebApplicationException("Controller is not a wizard", Status.BAD_REQUEST);
-         }
-         WizardCommandController wizardController = (WizardCommandController) controller;
-         for (int i = 0; i < stepIndex; i++)
-         {
-            if (wizardController.canMoveToNextStep())
+            if (!(controller instanceof WizardCommandController))
             {
-               helper.populateController(content, wizardController);
-               helper.describeValidation(builder, controller);
-               wizardController.next().initialize();
+               throw new WebApplicationException("Controller is not a wizard", Status.BAD_REQUEST);
             }
+            WizardCommandController wizardController = (WizardCommandController) controller;
+            for (int i = 0; i < stepIndex; i++)
+            {
+               if (wizardController.canMoveToNextStep())
+               {
+                  helper.populateController(content, wizardController);
+                  helper.describeValidation(builder, controller);
+                  wizardController.next().initialize();
+               }
+            }
+            helper.describeMetadata(builder, controller);
+            helper.describeCurrentState(builder, controller);
+            helper.describeInputs(builder, controller);
          }
-         helper.describeMetadata(builder, controller);
-         helper.describeCurrentState(builder, controller);
-         helper.describeInputs(builder, controller);
+         return Response.ok(builder.build()).build();
       }
-      return builder.build();
+      catch (Exception e)
+      {
+         return errorResponse(e);
+      }
    }
 
    @GET
    @javax.ws.rs.Path("/commands/{commandName}/query")
    @Consumes(MediaType.MEDIA_TYPE_WILDCARD)
-   @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
+   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
    public Response executeQuery(@Context UriInfo uriInfo,
             @PathParam("commandName") String commandName,
             @Context HttpHeaders headers)
@@ -264,7 +329,8 @@ public class ObsidianResource
       {
          stepIndex = stepValues.get(0);
       }
-      if (stepIndex == null) {
+      if (stepIndex == null)
+      {
          stepIndex = "0";
       }
       final JsonBuilder jsonBuilder = new JsonBuilder().createJson(Integer.valueOf(stepIndex));
@@ -321,7 +387,6 @@ public class ObsidianResource
       }
       return response;
    }
-      
 
    @POST
    @javax.ws.rs.Path("/commands/{commandName}/zip")
@@ -395,7 +460,6 @@ public class ObsidianResource
       }
    }
 
-
    @POST
    @javax.ws.rs.Path("/commands/{commandName}/execute")
    @Consumes(MediaType.APPLICATION_JSON)
@@ -415,7 +479,7 @@ public class ObsidianResource
             if (result instanceof Failed)
             {
                JsonObjectBuilder builder = Json.createObjectBuilder();
-               helper.describeResult(builder,result);
+               helper.describeResult(builder, result);
                return Response.status(Status.INTERNAL_SERVER_ERROR).entity(unwrapJsonObjects(builder)).build();
             }
             else
@@ -447,8 +511,10 @@ public class ObsidianResource
       }
       catch (Exception e)
       {
+         return errorResponse(e);
+/*
          StringWriter writer = new StringWriter();
-         PrintWriter ps =new PrintWriter(writer);
+         PrintWriter ps = new PrintWriter(writer);
          boolean first = true;
          Throwable t = e;
          while (true)
@@ -467,6 +533,7 @@ public class ObsidianResource
          }
          ps.close();
          return Response.status(Status.INTERNAL_SERVER_ERROR).entity(writer.toString()).build();
+*/
       }
    }
 
@@ -487,53 +554,6 @@ public class ObsidianResource
       }
       return entity;
    }
-
-   /**
-    * Returns the entity from the result handling {@link CompositeResult} values as a List of entities
-    */
-   protected static Object getEntity(Result result)
-   {
-      if (result instanceof CompositeResult) {
-         CompositeResult compositeResult = (CompositeResult) result;
-         List<Object> answer = new ArrayList<>();
-         List<Result> results = compositeResult.getResults();
-         for (Result child : results)
-         {
-            Object entity = getEntity(child);
-            answer.add(entity);
-         }
-         return answer;
-      }
-      return result.getEntity().orElse(null);
-   }
-
-   /**
-    * Returns the result message handling composite results
-    */
-   protected static String getMessage(Result result)
-   {
-      if (result instanceof CompositeResult) {
-         CompositeResult compositeResult = (CompositeResult) result;
-         StringBuilder builder = new StringBuilder();
-         List<Result> results = compositeResult.getResults();
-         for (Result child : results)
-         {
-            String message = getMessage(child);
-            if (message != null && message.trim().length() > 0)
-            {
-               if (builder.length() > 0)
-               {
-                  builder.append("\n");
-               }
-               builder.append(message);
-            }
-         }
-         return builder.toString();
-
-      }
-      return result.getMessage();
-   }
-
 
    @POST
    @javax.ws.rs.Path("/commands/{commandName}/catapult")
@@ -621,4 +641,66 @@ public class ObsidianResource
       }
       return context;
    }
+
+   protected Response errorResponse(Throwable e)
+   {
+      log.log(Level.SEVERE, e.getMessage(), e);
+      JsonObject result = exceptionToJson(e, 7);
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(result).build();
+   }
+
+   protected JsonObject exceptionToJson(Throwable e, int depth)
+   {
+      JsonArrayBuilder stackElements = createArrayBuilder();
+      StackTraceElement[] stackTrace = e.getStackTrace();
+      if (stackTrace != null)
+      {
+         for (StackTraceElement element : stackTrace)
+         {
+            stackElements.add(strackTraceElementToJson(element));
+         }
+      }
+      JsonObjectBuilder builder = createObjectBuilder()
+               .add("type", e.getClass().getName())
+               .add("message", e.getMessage())
+               .add("localizedMessage", e.getLocalizedMessage())
+               .add("stackTrace", stackElements)
+               .add("forgeVersion", Versions.getImplementationVersionFor(UIContext.class).toString());
+      if (depth > 0)
+      {
+         Throwable cause = e.getCause();
+         if (cause != null && cause != e)
+         {
+            builder.add("cause", exceptionToJson(cause, depth - 1));
+         }
+      }
+      if (e instanceof WebApplicationException)
+      {
+         WebApplicationException webApplicationException = (WebApplicationException) e;
+         Response response = webApplicationException.getResponse();
+         if (response != null)
+         {
+            builder.add("status", response.getStatus());
+         }
+      }
+      return builder.build();
+   }
+
+   private JsonObjectBuilder strackTraceElementToJson(StackTraceElement element)
+   {
+      JsonObjectBuilder builder = createObjectBuilder().add("line", element.getLineNumber());
+      add(builder, "class", element.getClassName());
+      add(builder, "file", element.getFileName());
+      add(builder, "method", element.getMethodName());
+      return builder;
+   }
+
+   private void add(JsonObjectBuilder builder, String key, String value)
+   {
+      if (value != null)
+      {
+         builder.add(key, value);
+      }
+   }
+
 }
