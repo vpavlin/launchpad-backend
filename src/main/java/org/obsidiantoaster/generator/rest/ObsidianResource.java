@@ -115,6 +115,7 @@ public class ObsidianResource
       commandMap.put("launchpad-new-project", "Launchpad: New Project");
       commandMap.put("launchpad-new-starter-project", "Launchpad: New Starter Project");
 
+      commandMap.put("fabric8-new-project", "Fabric8: New Project");
       commandMap.put("fabric8-new-quickstart", "Fabric8: New Quickstart");
 
       commandMap.put("fabric8-import-git", "fabric8: Import Git");
