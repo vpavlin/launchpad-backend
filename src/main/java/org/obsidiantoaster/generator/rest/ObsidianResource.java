@@ -654,19 +654,22 @@ public class ObsidianResource
    {
       JsonArrayBuilder stackElements = createArrayBuilder();
       StackTraceElement[] stackTrace = e.getStackTrace();
+      JsonObjectBuilder builder = createObjectBuilder()
+               .add("type", e.getClass().getName());
+
+      add(builder, "message", e.getMessage());
+      add(builder, "localizedMessage", e.getLocalizedMessage());
+      add(builder, "forgeVersion", Versions.getImplementationVersionFor(UIContext.class).toString());
+
       if (stackTrace != null)
       {
          for (StackTraceElement element : stackTrace)
          {
             stackElements.add(strackTraceElementToJson(element));
          }
+         builder.add("stackTrace", stackElements);
       }
-      JsonObjectBuilder builder = createObjectBuilder()
-               .add("type", e.getClass().getName())
-               .add("message", e.getMessage())
-               .add("localizedMessage", e.getLocalizedMessage())
-               .add("stackTrace", stackElements)
-               .add("forgeVersion", Versions.getImplementationVersionFor(UIContext.class).toString());
+
       if (depth > 0)
       {
          Throwable cause = e.getCause();
