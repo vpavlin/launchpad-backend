@@ -294,11 +294,15 @@ public class ObsidianResource
             WizardCommandController wizardController = (WizardCommandController) controller;
             for (int i = 0; i < stepIndex; i++)
             {
+               helper.populateController(content, wizardController);
                if (wizardController.canMoveToNextStep())
                {
-                  helper.populateController(content, wizardController);
-                  helper.describeValidation(builder, controller);
                   wizardController.next().initialize();
+               }
+               else
+               {
+                  helper.describeValidation(builder, controller);
+                  break;
                }
             }
             helper.describeMetadata(builder, controller);
