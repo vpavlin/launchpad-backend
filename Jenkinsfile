@@ -70,6 +70,12 @@ if (utils.isCI()){
     def forgeURL = 'forge.api.prod-preview.openshift.io'
     def openshiftURL = 'https://api.free-int.openshift.com'
     def keycloakURL = 'https://sso.prod-preview.openshift.io'
+
+    if (!pipeline){
+        checkout scm
+        pipeline = load 'release.groovy'
+    }
+    
     pipeline.deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
 
     pipeline.approve(releaseVersion, project)
