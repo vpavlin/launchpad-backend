@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 @Library('github.com/fabric8io/fabric8-pipeline-library@master')
+
 def releaseVersion
 def newRelease
 def name = 'generator-backend'
 def project = 'fabric8io/generator-backend'
 def pipeline
+def utils = new io.fabric8.Utils()
+
 
 node{
   properties([
