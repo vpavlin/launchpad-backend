@@ -73,13 +73,13 @@ def deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
 
 def approve(releaseVersion, project){
   stage('approve'){
+    def changeAuthor = env.CHANGE_AUTHOR
       def message = """Forge Generator backend ${releaseVersion} has been deployed https://prod-preview.openshift.io
 
       Please check and approve production deployment ${env.JOB_URL}
 
       @${changeAuthor} @demo-team
       """
-      def changeAuthor = env.CHANGE_AUTHOR
       if (!changeAuthor){
           error "no commit author found so cannot comment on PR"
       }
