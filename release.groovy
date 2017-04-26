@@ -80,6 +80,7 @@ def approve(releaseVersion, project){
 
       @${changeAuthor} @demo-team
       """
+/*
       if (!changeAuthor){
           error "no commit author found so cannot comment on PR"
       }
@@ -91,6 +92,8 @@ def approve(releaseVersion, project){
       container('clients'){
           flow.addCommentToPullRequest(message, pr, project)
       }
+*/
+
       input id: 'Proceed', message: "\n${message}"
   }
 }
