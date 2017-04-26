@@ -41,4 +41,57 @@ def release(project){
   }
 }
 
+
+def deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL){
+  ws{
+    stage "Deploying ${releaseVersion}"
+    container(name: 'clients') {
+
+      def yaml = "http://central.maven.org/maven2/io/fabric8/${name}/${releaseVersion}/${name}-${releaseVersion}-openshift.yml"
+
+      echo "now deploying to namespace ${namespace}"
+      sh """
+        oc process -v FORGE_URL=${forgeURL} -v OPENSHIFT_API_URL=${openshiftURL} -v KEYCLOAK_SAAS_URL=${keycloakURL} -n ${namespace} -f ${yaml} | oc replace -n ${namespace} -f -
+      """
+
+      sleep 10 // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at the new DC perhaps?
+
+      // wait until the pods are running
+      waitUntil{
+        try{
+          sh "oc get pod -l project=${name},provider=fabric8 -n ${namespace} | grep '1/1       Running'"
+          echo "${name} pod Running for v ${releaseVersion}"
+          return true
+        } catch (err) {
+          echo "waiting for ${name} to be ready..."
+          return false
+        }
+      }
+    }
+  }
+}
+
+def approve(releaseVersion, project){
+  stage('approve'){
+      def message = """Forge Generator backend ${releaseVersion} has been deployed https://prod-preview.openshift.io
+
+      Please check and approve production deployment ${env.JOB_URL}
+
+      @${changeAuthor} @demo-team
+      """
+      def changeAuthor = env.CHANGE_AUTHOR
+      if (!changeAuthor){
+          error "no commit author found so cannot comment on PR"
+      }
+      def pr = env.CHANGE_ID
+      if (!pr){
+          error "no pull request number found so cannot comment on PR"
+      }
+      
+      container('clients'){
+          flow.addCommentToPullRequest(message, pr, project)
+      }
+      input id: 'Proceed', message: "\n${message}"
+  }
+}
 return this;

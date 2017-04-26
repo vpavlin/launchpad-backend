@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@Library('github.com/rawlingsj/fabric8-pipeline-library@master')
+@Library('github.com/fabric8io/fabric8-pipeline-library@master')
 def releaseVersion
 def newRelease
 def name = 'generator-backend'
+def project = 'fabric8io/generator-backend'
+def pipeline
 
 node{
   properties([
@@ -28,59 +30,53 @@ node{
   newRelease = params.release == 'new release' ? true : false
 }
 
-if (newRelease){
-  releaseNode{
-    ws{
-      checkout scm
-      readTrusted 'release.groovy'
-      sh "git remote set-url origin git@github.com:fabric8io/generator-backend.git"
+if (utils.isCI()){
+  
+  echo 'CI not enabled'
 
-      def pipeline = load 'release.groovy'
+} else if (utils.isCD()){
 
-      stage 'Stage'
-      def stagedProject = pipeline.stage()
-      releaseVersion = stagedProject[1]
+  if (newRelease){
+    releaseNode{
+      ws{
+        checkout scm
+        readTrusted 'release.groovy'
+        sh "git remote set-url origin git@github.com:fabric8io/generator-backend.git"
 
-      stage 'Promote'
-      pipeline.release(stagedProject)
-    }
-  }
-} else {
-  node {
-    def cmd = "curl -L http://central.maven.org/maven2/io/fabric8/${name}/maven-metadata.xml | grep '<latest' | cut -f2 -d'>'|cut -f1 -d'<'"
-    releaseVersion = sh(script: cmd, returnStdout: true).toString().trim()
-    echo "Skipping release and redeploying ${releaseVersion}"
-  }
-}
+        pipeline = load 'release.groovy'
 
-deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-config'){
-  ws{
-    stage "Deploying ${releaseVersion}"
-    container(name: 'clients') {
+        stage 'Stage'
+        def stagedProject = pipeline.stage()
+        releaseVersion = stagedProject[1]
 
-      def prj = 'dsaas-preview'
-      def forgeURL = 'forge.api.prod-preview.openshift.io'
-      def openshiftURL = 'https://api.free-int.openshift.com'
-      def yaml = "http://central.maven.org/maven2/io/fabric8/${name}/${releaseVersion}/${name}-${releaseVersion}-openshift.yml"
-
-      echo "now deploying to namespace ${prj}"
-      sh """
-        oc process -n ${prj} -f ${yaml} | oc replace -n ${prj} -f -
-      """
-
-      sleep 10 // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at the new DC perhaps?
-
-      // wait until the pods are running
-      waitUntil{
-        try{
-          sh "oc get pod -l project=${name},provider=fabric8 -n ${prj} | grep '1/1       Running'"
-          echo "${name} pod Running for v ${releaseVersion}"
-          return true
-        } catch (err) {
-          echo "waiting for ${name} to be ready..."
-          return false
-        }
+        stage 'Promote'
+        pipeline.release(stagedProject)
       }
     }
+  } else {
+    node {
+      def cmd = "curl -L http://central.maven.org/maven2/io/fabric8/${name}/maven-metadata.xml | grep '<latest' | cut -f2 -d'>'|cut -f1 -d'<'"
+      releaseVersion = sh(script: cmd, returnStdout: true).toString().trim()
+      echo "Skipping release and redeploying ${releaseVersion}"
+    }
+  }
+
+  deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-config'){
+    def namespace = 'dsaas-preview'
+    def forgeURL = 'forge.api.prod-preview.openshift.io'
+    def openshiftURL = 'https://api.free-int.openshift.com'
+    def keycloakURL = 'https://sso.prod-preview.openshift.io'
+    pipeline.deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
+
+    pipeline.approve(releaseVersion, project)
+  }
+
+  deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-prod-config'){
+    def namespace = 'dsaas-production'
+    def forgeURL = 'forge.api.openshift.io'
+    def openshiftURL = 'https://api.starter-us-east-2.openshift.com'
+    def keycloakURL = 'https://sso.openshift.io'
+    pipeline.deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
+
   }
 }
