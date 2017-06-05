@@ -477,7 +477,7 @@ public class ObsidianResource
       java.nio.file.Path path = Files.createTempDirectory("projectDir");
       try (CommandController controller = getCommand(commandName, path, headers))
       {
-         helper.populateControllerAllInputs(content, controller);
+         populateControllerAllStepInputs(content, controller);
          if (controller.isValid())
          {
             Result result = controller.execute();
@@ -541,6 +541,27 @@ public class ObsidianResource
 */
       }
    }
+
+   /**
+    * Whatever step we are currently on in the UI lets populate all wizard steps we can in case the UI passes
+    * through default values for future steps
+    */
+   public void populateControllerAllStepInputs(JsonObject content, CommandController controller) throws Exception
+   {
+      helper.populateController(content, controller);
+      if (controller instanceof WizardCommandController)
+      {
+         WizardCommandController wizardController = (WizardCommandController) controller;
+         for (int i = 0; wizardController.canMoveToNextStep(); i++)
+         {
+            wizardController.next().initialize();
+            helper.populateController(content, wizardController);
+         }
+      }
+   }
+
+
+
 
    protected Object unwrapJsonObjects(Object entity)
    {
