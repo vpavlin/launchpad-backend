@@ -1,62 +1,59 @@
-# Code Generator Backend
+# Fabric8 Generator Backend
 
-[![Build Status](https://ci.centos.org/job/devtools-generator-backend-build-master/badge/icon)](https://ci.centos.org/job/devtools-generator-backend-build-master)
+This is the back end service for the [fabric8-generator](https://github.com/fabric8io/fabric8-generator). 
 
-This code generator project which is a Java backend system exposes several JBoss Forge commands
-using a REST endpoint. The backend runs within a WildFly Swarm container and is called from
-an Angularjs 2 Front application responsible to collect from a end user the information needed to generate
-a Zip file containing an Apache Maven project populated for an Eclipse Vert.x, Spring Boot or WildFly Swarm
-container.
+The backend runs within a WildFly Swarm container and is called from the [fabric8-ui](https://github.com/fabric8io/fabric8-ui) front end to create new apps or import projects from github.
 
 * Build this project:
 
 ```bash
-$ mvn package -s configuration/settings.xml
+$ ./build.sh
 ```
 
-Remark : This project requires that you compile this [github project](http://github.com/obsidian-toaster/obsidian-addon) hosting the Obsidian JBoss Addon.
+* Debugging this project
 
-* Set the CATAPULT_URL environment variable: 
-
-		$ export CATAPULT_URL=http://localhost:8080
-* Execute the fat-jar in the target folder with:
 
 ```bash
-$ java -jar target/generator-swarm.jar
+$ ./debug.sh
 ```
 
-Then follow the [front-end ReadMe][1] to run the front-end.
+* Running this project
 
-[1]:https://github.com/obsidian-toaster/generator-frontend/blob/master/README.md
-
-## Development mode
-
-Run with the `-DdevMode=true` flag to auto-reload SNAPSHOT addons that are installed in your local maven repository. The changes will last as long as the container is alive.
-Make sure to rebuild the backend if for some reason you need to stop the container:
-```
-java -DdevMode=true -jar target/generator-swarm.jar
+```bash
+$ ./run.sh
 ```
 
-Build and Run the Unit Tests
-----------------------------
+## Environment variables
 
-* Execute:
+To run this project you need to point the back end at KeyCloak and an OpenShift cluster. 
 
-        $ mvn clean install
-        
-Run the Integration Tests, Optionally Building
-----------------------------------------------
+You can point the back end at the production KeyCloak and OpenShift cluster via:
+```
+export OPENSHIFT_API_URL=https://api.starter-us-east-2.openshift.com:443
+export KEYCLOAK_SAAS_URL=https://sso.openshift.io/
+```
+Then call `./run.sh` or `./debug.sh` as above.
 
-* You need to set the CATAPULT_URL environment variable before running the integration tests: 
+## Using fabric8-ui with a local build
 
-		$ export CATAPULT_URL=http://localhost:8080
+To run [fabric8-ui](https://github.com/fabric8io/fabric8-ui) against a locally running/debugging Fabric8 Generator in the fabric8-ui project type:
+```
+cd fabric8-ui
+source environments/openshift-prod-cluster.sh
+export FABRIC8_FORGE_API_URL=http://localhost:8080
+npm start
+```
+then open [http://localhost:3000/](http://localhost:3000/) to use the local build of [fabric8-ui](https://github.com/fabric8io/fabric8-ui) which should now use your local Fabric8 Generator.
 
+## Using a local build of fabric8-generator 
 
-* To build the project and run the integration tests, allowing Maven to start the WildFly Swarm server:
- 
-        $ mvn clean install -Pit
+When working on the [fabric8-generator](https://github.com/fabric8io/fabric8-generator) codebase you need to (temporarily) change the [pom.xml](pom.xml) in this project to point to the `1.0.0-SNAPSHOT` version of `fabric8-generator`.
 
+You can do that by changing [this line which defines the fabric8.generator.version property](https://github.com/fabric8io/generator-backend/blob/master/pom.xml#L22) to this:
+```xml
+      <fabric8.generator.version>1.0.0-SNAPSHOT</fabric8.generator.version>
+```
 
-* To skip building and just run the integration tests, allowing Maven to start the WildFly Swarm server:
+Now run `./build.sh` in this project.
 
-        $ mvn integration-test -Pit
+Next time you want to make a code change you can just rebuild `mvn install` in the [fabric8-generator](https://github.com/fabric8io/fabric8-generator) project and the `./run.sh` or `./debug.sh` will automatically reload the new version of your addon! This greatly speeds up development time!
