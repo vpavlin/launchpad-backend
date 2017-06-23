@@ -41,6 +41,16 @@ def release(project){
   }
 }
 
+def updateDownstreamDependencies(stagedProject) {
+  pushPomPropertyChangePR {
+    propertyName = 'forge.version'
+    projects = [
+            'fabric8io/fabric8-platform'
+    ]
+    version = stagedProject[1]
+  }
+}
+
 
 def deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL){
   ws{

@@ -54,6 +54,9 @@ if (utils.isCI()){
 
         stage 'Promote'
         pipeline.release(stagedProject)
+
+        stage 'Update downstream dependencies'
+        pipeline.updateDownstreamDependencies(stagedProject)
       }
     }
   } else {
