@@ -19,7 +19,7 @@
       <obsidian.forge.version>${project.version}</obsidian.forge.version>
      <fabric8.version>2.2.209</fabric8.version>
       <fabric8.maven.plugin.version>3.3.1</fabric8.maven.plugin.version>
-      <fabric8.generator.version>1.0.24</fabric8.generator.version>
+      <fabric8.generator.version>1.0.25</fabric8.generator.version>
       <maven.enforcer.plugin.version>1.4</maven.enforcer.plugin.version>
       <wildfly.swarm.version>2017.3.2</wildfly.swarm.version>
       <forge.version>3.6.1.Final</forge.version>
