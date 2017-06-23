@@ -16,6 +16,7 @@
  */
 @Library('github.com/fabric8io/fabric8-pipeline-library@master')
 
+def stagedProject
 def releaseVersion
 def newRelease
 def name = 'generator-backend'
@@ -44,19 +45,23 @@ if (utils.isCI()){
       ws{
         checkout scm
         readTrusted 'release.groovy'
+
         sh "git remote set-url origin git@github.com:fabric8io/generator-backend.git"
 
         pipeline = load 'release.groovy'
 
-        stage 'Stage'
-        def stagedProject = pipeline.stage()
-        releaseVersion = stagedProject[1]
+        stage('Stage') {
+          stagedProject = pipeline.stage()
+          releaseVersion = stagedProject[1]
+        }
 
-        stage 'Promote'
-        pipeline.release(stagedProject)
+        stage('Promote') {
+          pipeline.release(stagedProject)
+        }
 
-        stage 'Update downstream dependencies'
-        pipeline.updateDownstreamDependencies(stagedProject)
+        stage('Update downstream dependencies') {
+          pipeline.updateDownstreamDependencies(stagedProject)
+        }
       }
     }
   } else {
