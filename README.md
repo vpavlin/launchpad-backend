@@ -21,7 +21,7 @@ If you are [running fabric8 locally on MiniShift](https://github.com/fabric8io/f
 
 ```
 export OPENSHIFT_API_URL=https://192.168.64.82:8443
-export KEYCLOAK_SAAS_URL="https://`oc get route keycloak --template={{.spec.host}}`/"
+export KEYCLOAK_SAAS_URL="http://`oc get route keycloak --template={{.spec.host}}`/"
 ```
 
 ### Build this project:
