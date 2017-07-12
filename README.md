@@ -15,6 +15,15 @@ export KEYCLOAK_SAAS_URL=https://sso.openshift.io/
 ```
 Then call `./run.sh` or `./debug.sh` as below.
 
+### Using Minishift
+
+If you are [running fabric8 locally on MiniShift](https://github.com/fabric8io/fabric8-platform/blob/master/INSTALL.md) then your local variables will be something like:
+
+```
+export OPENSHIFT_API_URL=https://192.168.64.82:8443
+export KEYCLOAK_SAAS_URL="https://`oc get route keycloak --template={{.spec.host}}`/"
+```
+
 ### Build this project:
 
 ```bash
