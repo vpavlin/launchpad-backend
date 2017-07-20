@@ -56,24 +56,34 @@ then open [http://localhost:3000/](http://localhost:3000/) to use the local buil
 
 ## Using a local build of the fabric8-generator addon
 
-When working on the [fabric8-generator](https://github.com/fabric8io/fabric8-generator) codebase you need to (temporarily) change the [pom.xml](pom.xml) in this project to point to the `1.0.0-SNAPSHOT` version of `fabric8-generator`.
+When working on the [fabric8-generator](https://github.com/fabric8io/fabric8-generator) codebase you need to work with SNAPSHOT version of `fabric8-generator` add-ion.
 
-You can do that by changing [this line which defines the fabric8.generator.version property](https://github.com/fabric8io/generator-backend/blob/master/pom.xml#L22) to this:
-```xml
-      <fabric8.generator.version>1.0.0-SNAPSHOT</fabric8.generator.version>
+In your swarm backend [generator-backend](https://github.com/fabric8io/generator-backend/blob/master/pom.xml#L408) use the  generator-shapshot profile.
+
+* build `fabric8-generator` snapshot:
+```
+mvn install
 ```
 
-Now run `./build.sh` in this project.
+* build sawrm backend `genrator-backend` with the profile:
+```
+mvn install -Pgenerator-snapshot
+```
 
-Next time you want to make a code change you can just rebuild `mvn install` in the [fabric8-generator](https://github.com/fabric8io/fabric8-generator) project and the `./run.sh` or `./debug.sh` will automatically reload the new version of your addon! This greatly speeds up development time!
+* run
 
+```
+./run.sh
+``` 
+or `./debug.sh` will automatically reload the new version of your addon! This greatly speeds up development time!
 
 ## Using a local fabric8-generator with MiniShift
 
 Once you are running a local fabric8-generator you should be able to query it like this:
 
 ```
-curl http://localhost:8080/api/version
+curl http://localhost:8080/forge/version
+{"backendVersion":"1.0.0-SNAPSHOT","forgeVersion":"3.6.1.Final"}
 ```
 
 How if you are [running fabric8 locally on MiniShift](https://github.com/fabric8io/fabric8-platform/blob/master/INSTALL.md) you just need to point the console at your locally running process.
@@ -87,7 +97,7 @@ Its probably something like `192.168.X.Y`
 First test you've got the right IP via:
 
 ```
-curl http://192.168.X.Y:8080/api/version
+curl http://192.168.X.Y:8080/forge/version
 ```
 
 If that works then try edit the `fabric8 ConfigMap` to point at your local forge:
