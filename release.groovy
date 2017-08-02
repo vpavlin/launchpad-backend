@@ -110,25 +110,28 @@ def approve(releaseVersion, project){
 
 def updateGeneratorTemplate(name, releaseVersion){
   container(name: 'clients') {
+    def gitRepo = 'openshiftio/saas-openshiftio'
     def flow = new io.fabric8.Fabric8Commands()
     sh 'chmod 600 /root/.ssh-git/ssh-key'
     sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
     sh 'chmod 700 /root/.ssh-git'
 
-    git 'git@github.com:openshiftio/saas.git'
+    git 'git@github.com:${gitRepo}.git'
 
     sh "git config user.email fabric8cd@gmail.com"
     sh "git config user.name fabric8-cd"
 
     def uid = UUID.randomUUID().toString()
-    sh "git checkout -b versionUpdate${uid}"
+    def branch = "versionUpdate${uid}"
+    sh "git checkout -b ${branch}"
 
     sh "curl -L -o homeless-templates/generator-backend.yaml http://central.maven.org/maven2/io/fabric8/${name}/${releaseVersion}/${name}-${releaseVersion}-openshift.yml"
 
     def message = "Update generator-backend template to ${releaseVersion}"
     sh "git commit -a -m \"${message}\""
-    sh "git push origin versionUpdate${uid}"
-    flow.createPullRequest(message,'openshiftio/saas',"versionUpdate${uid}")
+    sh "git push origin ${branch}"
+    def prId = flow.createPullRequest(message, gitRepo, branch)
+    flow.mergePR(gitRepo, prId)
   }
 }
 
