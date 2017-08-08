@@ -61,7 +61,7 @@ def deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
 
       echo "now deploying to namespace ${namespace}"
       sh """
-        oc process -v FORGE_URL=${forgeURL} -v OPENSHIFT_API_URL=${openshiftURL} -v KEYCLOAK_SAAS_URL=${keycloakURL} -n ${namespace} -f ${yaml} | oc apply -n ${namespace} -f -
+        oc process -v FORGE_URL=${forgeURL} -v OPENSHIFT_API_URL=${openshiftURL} -v KEYCLOAK_SAAS_URL=${keycloakURL} -n ${namespace} -f ${yaml} | oc apply --force -n ${namespace} -f -
       """
 
       sleep 10 // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at the new DC perhaps?
