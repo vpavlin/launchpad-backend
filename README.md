@@ -20,9 +20,17 @@ Then call `./run.sh` or `./debug.sh` as below.
 If you are [running fabric8 locally on MiniShift](https://github.com/fabric8io/fabric8-platform/blob/master/INSTALL.md) then your local variables will be something like:
 
 ```
-export OPENSHIFT_API_URL=https://192.168.64.82:8443
-export KEYCLOAK_SAAS_URL="http://`oc get route keycloak --template={{.spec.host}}`/"
+export OPENSHIFT_API_URL=https://`minishift ip`:8443
+export KEYCLOAK_SAAS_URL="http://`oc get route keycloak --template={{.spec.host}} -n fabric8`/"
 ```
+
+
+### Using Minikube
+```
+export OPENSHIFT_API_URL=https://`minikube ip`:8443
+export KEYCLOAK_SAAS_URL="http://`kubectl get ingress -n fabric8 --template='{{ (index .spec.rules 0).host}}' f8tenant`/"
+```
+
 
 ### Build this project:
 
@@ -73,7 +81,7 @@ Next time you want to make a code change you can just rebuild `mvn install` in t
 Once you are running a local fabric8-generator you should be able to query it like this:
 
 ```
-curl http://localhost:8080/api/version
+curl http://localhost:8080/forge/version
 ```
 
 How if you are [running fabric8 locally on MiniShift](https://github.com/fabric8io/fabric8-platform/blob/master/INSTALL.md) you just need to point the console at your locally running process.
@@ -87,7 +95,7 @@ Its probably something like `192.168.X.Y`
 First test you've got the right IP via:
 
 ```
-curl http://192.168.X.Y:8080/api/version
+curl http://192.168.X.Y:8080/forge/version
 ```
 
 If that works then try edit the `fabric8 ConfigMap` to point at your local forge:
