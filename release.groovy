@@ -69,7 +69,7 @@ def deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
       // wait until the pods are running
       waitUntil{
         try{
-          sh "oc get pod -l project=${name},provider=fabric8 -n ${namespace} | grep '1/1       Running'"
+          sh "oc get pod -l app=${name},provider=fabric8 -n ${namespace} | grep '1/1       Running'"
           echo "${name} pod Running for v ${releaseVersion}"
           return true
         } catch (err) {
