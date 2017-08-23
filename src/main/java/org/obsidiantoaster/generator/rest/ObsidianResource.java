@@ -93,7 +93,7 @@ import static javax.json.Json.createObjectBuilder;
 public class ObsidianResource
 {
    public static final String CATAPULT_SERVICE_HOST = "CATAPULT_SERVICE_HOST";
-   private static final String DEFAULT_COMMAND_NAME = "launchpad-new-project";
+   private static final String DEFAULT_COMMAND_NAME = "fabric8-new-project";
    private static final Logger log = Logger.getLogger(ObsidianResource.class.getName());
    private final Map<String, String> commandMap = new TreeMap<>();
 
@@ -112,11 +112,11 @@ public class ObsidianResource
 
    public ObsidianResource()
    {
-      commandMap.put("launchpad-new-project", "Launchpad: New Project");
-      commandMap.put("launchpad-new-starter-project", "Launchpad: New Starter Project");
+      //commandMap.put("launchpad-new-project", "Launchpad: New Project");
+      //commandMap.put("launchpad-new-starter-project", "Launchpad: New Starter Project");
 
       commandMap.put("fabric8-new-project", "Fabric8: New Project");
-      commandMap.put("fabric8-new-quickstart", "Fabric8: New Quickstart");
+      //commandMap.put("fabric8-new-quickstart", "Fabric8: New Quickstart");
 
       commandMap.put("fabric8-import-git", "fabric8: Import Git");
       commandMap.put("fabric8-check-git-accounts", "fabric8: Check Git Accounts");
