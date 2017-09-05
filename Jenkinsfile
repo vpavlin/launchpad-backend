@@ -87,7 +87,9 @@ if (utils.isCI()){
     pipeline.deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)
 
     pipeline.approve(releaseVersion, project)
-    pipeline.updateGeneratorTemplate(name, releaseVersion)
+    if (newRelease){
+      pipeline.updateGeneratorTemplate(name, releaseVersion)
+    }
   }
 
   deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-prod-config', label: "deploy_prod_generator_backend_master_${env.BUILD_NUMBER}"){
