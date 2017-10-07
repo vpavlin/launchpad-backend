@@ -15,15 +15,14 @@
  */
 package org.obsidiantoaster.generator.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.File;
-import java.io.StringReader;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -33,53 +32,21 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import java.io.StringReader;
+import java.net.URI;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.Filters;
-import org.jboss.shrinkwrap.api.GenericArchive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.importer.ExplodedImporter;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wildfly.swarm.jaxrs.JAXRSArchive;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-/**
- *
- */
 @RunWith(Arquillian.class)
 public class HealthResourceIT
 {
    private static final String CATAPULT_SERVICE_URL = "CATAPULT_URL";
    
-   @Deployment
+   @Deployment(testable = false)
    public static Archive<?> createDeployment()
    {
-      List<String> packageNames = Arrays.asList(ObsidianResource.class.getPackage().getName().split("\\."));
-      String packageName = packageNames.stream()
-               .filter(input -> packageNames.indexOf(input) != packageNames.size() - 1)
-               .collect(Collectors.joining("."));
-      JAXRSArchive deployment = ShrinkWrap.create(JAXRSArchive.class);
-      final File[] artifacts = Maven.resolver().loadPomFromFile("pom.xml")
-               .resolve("org.jboss.forge:forge-service-core")
-               .withTransitivity().asFile();
-      deployment.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-      deployment.merge(ShrinkWrap.create(GenericArchive.class).as(ExplodedImporter.class)
-               .importDirectory("target/generator/WEB-INF/addons").as(GenericArchive.class),
-               "/WEB-INF/addons", Filters.include(".*"));
-      deployment.addResource(ObsidianResource.class);
-      deployment.addResource(HealthResource.class);
-      deployment.addPackages(true, packageName);
-      deployment.addAsLibraries(artifacts);
-      return deployment;
+      return Deployments.createDeployment();
    }
 
    @ArquillianResource
@@ -96,7 +63,6 @@ public class HealthResourceIT
    }
 
    @Test
-   @RunAsClient
    public void readinessCheck()
    {
       final Response response = readyTarget.request().get();
@@ -111,7 +77,6 @@ public class HealthResourceIT
 
    @Ignore("Until we can run the test against an actual Catapult instance")
    @Test
-   @RunAsClient
    public void catapultReadinessCheck() throws Exception
    {
       String catapultUrlString = System.getProperty(CATAPULT_SERVICE_URL, System.getenv(CATAPULT_SERVICE_URL));
