@@ -1,9 +1,9 @@
 kind: Template
 parameters:
-- name: FORGE_URL
-  value: forge.api.prod-preview.openshift.io
 - name: OPENSHIFT_API_URL
   value: https://api.free-int.openshift.com
 - name: KEYCLOAK_SAAS_URL
   value: https://sso.prod-preview.openshift.io
+- name: WIT_URL
+  value: https://api.prod-preview.openshift.io/
 
