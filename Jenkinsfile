@@ -75,7 +75,7 @@ if (utils.isCI()){
 
   deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-preview-config', label: "deploy_prodpreview_generator_backend_master_${env.BUILD_NUMBER}"){
     def namespace = 'dsaas-preview'
-    def forgeURL = 'forge.api.prod-preview.openshift.io'
+    def witApiURL = 'https://api.prod-preview.openshift.io/'
     def openshiftURL = 'https://api.free-int.openshift.com'
     def keycloakURL = 'https://sso.prod-preview.openshift.io'
 
@@ -94,7 +94,7 @@ if (utils.isCI()){
 
   deployOpenShiftNode(openshiftConfigSecretName: 'dsaas-prod-config', label: "deploy_prod_generator_backend_master_${env.BUILD_NUMBER}"){
     def namespace = 'dsaas-production'
-    def forgeURL = 'forge.api.openshift.io'
+    def witApiURL = 'https://api.openshift.io/'
     def openshiftURL = 'https://api.starter-us-east-2.openshift.com'
     def keycloakURL = 'https://sso.openshift.io'
     pipeline.deploy(name, namespace, releaseVersion, forgeURL, openshiftURL, keycloakURL)

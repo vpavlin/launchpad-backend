@@ -8,6 +8,8 @@ spec:
           value: ${OPENSHIFT_API_URL}
         - name: KEYCLOAK_SAAS_URL
           value: ${KEYCLOAK_SAAS_URL}
+        - name: WIT_URL
+          value: ${WIT_URL}
         - name: LAUNCHPAD_BACKEND_CATALOG_GIT_REF
           value: v10
         workingDir: /home
