@@ -52,7 +52,7 @@ def updateDownstreamDependencies(stagedProject) {
 }
 
 
-def deploy(name, namespace, releaseVersion, openshiftURL, keycloakURL){
+def deploy(name, namespace, releaseVersion, openshiftURL, keycloakURL, witApiURL){
   ws{
     stage "Deploying ${releaseVersion}"
     container(name: 'clients') {

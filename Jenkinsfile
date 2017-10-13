@@ -84,7 +84,7 @@ if (utils.isCI()){
         pipeline = load 'release.groovy'
     }
     
-    pipeline.deploy(name, namespace, releaseVersion, openshiftURL, keycloakURL)
+    pipeline.deploy(name, namespace, releaseVersion, openshiftURL, keycloakURL, witApiURL)
 
     pipeline.approve(releaseVersion, project)
     if (newRelease){
@@ -97,7 +97,7 @@ if (utils.isCI()){
     def witApiURL = 'https://api.openshift.io/'
     def openshiftURL = 'https://api.starter-us-east-2.openshift.com'
     def keycloakURL = 'https://sso.openshift.io'
-    pipeline.deploy(name, namespace, releaseVersion, openshiftURL, keycloakURL)
+    pipeline.deploy(name, namespace, releaseVersion, openshiftURL, keycloakURL, witApiURL)
 
   }
 }
